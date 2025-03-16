@@ -1,22 +1,28 @@
 // webpack.config.js
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = (env, argv) => {
-  const isProduction = argv.mode === 'production';
+  const isProduction = argv.mode === "production";
 
   return {
-    entry: './src/index.tsx',
-    output: {
-      path: path.resolve(__dirname, 'dist'),
-      filename: isProduction ? '[name].[contenthash].js' : '[name].bundle.js',
-      publicPath: '/'
+    entry: {
+      popup: path.resolve("src/popup/index.tsx"),
+      options: path.resolve("src/options/Options.tsx"),
+      background: path.resolve("src/background/background.ts"),
+      contentScript: path.resolve("src/contentScript/contentScript.ts"),
+      newTab: path.resolve("src/tabs/Tabs.tsx"),
     },
-    
+    output: {
+      filename: "[name].js",
+      path: path.join(__dirname, "dist"),
+    },
+
     module: {
       rules: [
         // TypeScript/JavaScript files with Babel
@@ -24,116 +30,93 @@ module.exports = (env, argv) => {
           test: /\.(ts|tsx|js|jsx)$/,
           exclude: /node_modules/,
           use: {
-            loader: 'babel-loader',
+            loader: "babel-loader",
             options: {
               presets: [
-                '@babel/preset-env',
-                '@babel/preset-react',
-                '@babel/preset-typescript'
+                "@babel/preset-env",
+                "@babel/preset-react",
+                "@babel/preset-typescript",
               ],
-              plugins: [
-                '@babel/plugin-transform-react-jsx'
-              ]
-            }
-          }
+              plugins: ["@babel/plugin-transform-react-jsx"],
+            },
+          },
         },
         // Sass files
         {
           test: /\.(scss|sass)$/,
           use: [
-            isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
+            isProduction ? MiniCssExtractPlugin.loader : "style-loader",
             {
-              loader: 'css-loader',
-              options: {
-                modules: {
-                  localIdentName: '[name]__[local]--[hash:base64:5]'
-                },
-                sourceMap: !isProduction
-              }
+              loader: "css-loader",
             },
             {
-              loader: 'postcss-loader',
-              options: {
-                sourceMap: !isProduction
-              }
+              loader: "postcss-loader",
             },
             {
-              loader: 'sass-loader',
-              options: {
-                sourceMap: !isProduction
-              }
-            }
-          ]
+              loader: "sass-loader",
+            },
+          ],
         },
         // CSS files (for any regular CSS)
         {
           test: /\.css$/,
-          use: [
-            isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
-            'css-loader',
-            'postcss-loader'
-          ]
+          use: ["css-loader", "postcss-loader"],
         },
         // Image files
         {
           test: /\.(png|svg|jpg|jpeg|gif)$/i,
-          type: 'asset/resource',
+          type: "asset/resource",
           generator: {
-            filename: 'images/[hash][ext][query]'
-          }
+            filename: "images/[hash][ext][query]",
+          },
         },
         // Font files
         {
           test: /\.(woff|woff2|eot|ttf|otf)$/i,
-          type: 'asset/resource',
+          type: "asset/resource",
           generator: {
-            filename: 'fonts/[hash][ext][query]'
-          }
-        }
-      ]
+            filename: "fonts/[hash][ext][query]",
+          },
+        },
+      ],
     },
-    
+
     resolve: {
-      extensions: ['.tsx', '.ts', '.js', '.jsx'],
+      extensions: [".tsx", ".ts", ".js", ".jsx"],
       alias: {
-        '@': path.resolve(__dirname, 'src')
-      }
-    },
-    
-    plugins: [
-      new CleanWebpackPlugin(),
-      new HtmlWebpackPlugin({
-        template: './public/index.html',
-      }),
-      new MiniCssExtractPlugin({
-        filename: isProduction ? 'styles/[name].[contenthash].css' : 'styles/[name].css'
-      }),
-      new ForkTsCheckerWebpackPlugin({
-        typescript: {
-          configFile: path.resolve(__dirname, './tsconfig.json')
-        }
-      })
-    ],
-    
-    optimization: {
-      minimize: isProduction,
-      minimizer: [new TerserPlugin()],
-      splitChunks: {
-        chunks: 'all',
-        name: false
-      }
-    },
-    
-    devServer: {
-      static: {
-        directory: path.join(__dirname, 'public')
+        "@": path.resolve(__dirname, "src"),
       },
-      compress: true,
-      port: 3000,
-      hot: true,
-      historyApiFallback: true
     },
-    
-    devtool: isProduction ? 'source-map' : 'eval-source-map'
+
+    plugins: [
+      new CleanWebpackPlugin({
+        cleanStaleWebpackAssets: false,
+      }),
+      new CopyPlugin({
+        patterns: [
+          { from: path.resolve("./src/static"), to: path.resolve("dist") },
+        ],
+      }),
+      ...getHtmlPlugins(["popup", "options", "newTab"]),
+    ],
+
+    optimization: {
+      splitChunks: {
+        chunks: "all",
+      },
+    },
+
+    devtool: "cheap-module-source-map",
   };
 };
+
+function getHtmlPlugins(chunks) {
+  return chunks.map(
+    (chunk) =>
+      new HtmlWebpackPlugin({
+        title: "Water Tracker Extension",
+        filename: `${chunk}.html`,
+        chunks: [chunk],
+      })
+  );
+}

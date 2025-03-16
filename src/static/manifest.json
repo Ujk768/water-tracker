@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "Daily Water Tracker",
+  "description": "An extension to track your daily water intake",
+  "version": "1.0.0",
+  "action" : {
+      "default_popup": "popup.html",
+      "default_title": "Daily Water Tracker",
+      "default_icon" : "water-bottle.png"
+  },
+  "chrome_url_overrides": {
+      "newtab": "newTab.html"
+  },
+  "permissions": [
+      "tabs",
+      "bookmarks",
+      "storage",
+      "identity"
+  ],
+  "icons": {
+      "16" : "water-bottle.png",
+      "48" : "water-bottle.png",
+      "128" : "water-bottle.png"
+  },
+  "options_page": "options.html",
+  "background": {
+      "service_worker": "background.js"
+  },
+  "content_scripts": [
+      {
+          "matches": ["<all_urls>"],
+          "js": ["contentScript.js"]
+      }
+  ],
+  "host_permissions": [
+      "<all_urls>"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
+
