@@ -1,7 +1,7 @@
 import React from 'react'
-
-export default function options() {
+import "./options.scss";
+export default function Options() {
   return (
-    <div>options</div>
+    <div className='options'>options tfyihkhjoilk</div>
   )
 }

@@ -13,7 +13,7 @@ module.exports = (env, argv) => {
   return {
     entry: {
       popup: path.resolve("src/popup/index.tsx"),
-      options: path.resolve("src/options/Options.tsx"),
+      options: path.resolve("src/options/index.tsx"),
       background: path.resolve("src/background/background.ts"),
       contentScript: path.resolve("src/contentScript/contentScript.ts"),
       newTab: path.resolve("src/tabs/Tabs.tsx"),
