@@ -2,7 +2,6 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const TerserPlugin = require("terser-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
@@ -22,45 +21,28 @@ module.exports = (env, argv) => {
       filename: "[name].js",
       path: path.join(__dirname, "dist"),
     },
-
     module: {
       rules: [
-        // TypeScript/JavaScript files with Babel
+        // TypeScript and TSX
         {
-          test: /\.(ts|tsx|js|jsx)$/,
+          test: /\.(ts|tsx)$/,
+          use: "ts-loader",
           exclude: /node_modules/,
-          use: {
-            loader: "babel-loader",
-            options: {
-              presets: [
-                "@babel/preset-env",
-                "@babel/preset-react",
-                "@babel/preset-typescript",
-              ],
-              plugins: ["@babel/plugin-transform-react-jsx"],
-            },
-          },
         },
         // Sass files
         {
           test: /\.(scss|sass)$/,
           use: [
             isProduction ? MiniCssExtractPlugin.loader : "style-loader",
-            {
-              loader: "css-loader",
-            },
-            {
-              loader: "postcss-loader",
-            },
-            {
-              loader: "sass-loader",
-            },
+            "css-loader",
+            "postcss-loader",
+            "sass-loader",
           ],
         },
-        // CSS files (for any regular CSS)
+        // CSS files
         {
           test: /\.css$/,
-          use: ["css-loader", "postcss-loader"],
+          use: ["style-loader", "css-loader", "postcss-loader"],
         },
         // Image files
         {
@@ -80,14 +62,12 @@ module.exports = (env, argv) => {
         },
       ],
     },
-
     resolve: {
-      extensions: [".tsx", ".ts", ".js", ".jsx"],
+      extensions: [".tsx", ".ts", ".js"],
       alias: {
         "@": path.resolve(__dirname, "src"),
       },
     },
-
     plugins: [
       new CleanWebpackPlugin({
         cleanStaleWebpackAssets: false,
@@ -97,16 +77,16 @@ module.exports = (env, argv) => {
           { from: path.resolve("./src/static"), to: path.resolve("dist") },
         ],
       }),
-      ...getHtmlPlugins(["popup", "options", "newTab"]),
+      new ForkTsCheckerWebpackPlugin(),
+      ...(getHtmlPlugins(["popup", "options", "newTab"])),
+      ...(isProduction ? [new MiniCssExtractPlugin()] : []),
     ],
-
     optimization: {
       splitChunks: {
         chunks: "all",
       },
     },
-
-    devtool: "cheap-module-source-map",
+    devtool: isProduction ? false : "cheap-module-source-map",
   };
 };
 

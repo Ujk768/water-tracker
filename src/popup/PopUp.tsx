@@ -1,10 +1,38 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./popup.scss";
 import img from "../../public/images/water.png";
 
 export default function PopUp() {
+  const [isFirstTime, setIsFirstTime] = useState<boolean>(false);
 
-  return (
+  useEffect(() => {
+    console.log("Checking if it's the first time...");
+    chrome.storage.local.get(["isFirstTime"], (result) => {
+      console.log("Storage result:", result);
+      if (result.isFirstTime) {
+        setIsFirstTime(true);
+      }
+    });
+  }, []);
+
+  const handleSetup = () => {
+    chrome.storage.local.set({ isFirstTime: false });
+    chrome.runtime.openOptionsPage();
+    window.close(); // Close popup after redirection
+  };
+
+  return isFirstTime ? (
+    <div className="pop-up">
+      <h3 className="pop-up__heading">👋 Welcome!</h3>
+      <p className="pop-up__heading">Set your daily water goal and reminder preferences.</p>
+      <div
+        onClick={handleSetup}
+        className="pop-up__sign-up"
+      >
+        Let’s Set It Up
+      </div>
+    </div>
+  ) : (
     <div className="pop-up">
       <div className="pop-up__container">
         <div className="left-sec">
