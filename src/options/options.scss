@@ -29,6 +29,7 @@
     font-weight: 500;
     color: white;
     gap: 20px;
+    padding: 10px;
   }
   .img-sec {
     display: flex;
@@ -37,21 +38,43 @@
     align-items: center;
     gap: 20px;
   }
-  .content-sec{
+  .content-sec {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    
-    &__item{
-        height: 50px;
-        width: 100%;
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
 
-        .p-10 {
-            padding: 10px;
-        }
+    &__item {
+      height: 50px;
+      width: 100%;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+
+      .p-10 {
+        padding: 10px;
+      }
+      input {
+        margin-left: 5px;
+        height: 40px;
+        width: 40%;
+        text-align: center;
+      }
+    }
+  }
+  &__btn-sec {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+    button {
+      padding: 4px;
+      border-radius: 5px;
+      background-color: #4cc9fe;
+      border: none;
+      color: white;
+      width: 100px;
+      height: 50px;
+      text-align: center;
     }
   }
 }

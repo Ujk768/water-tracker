@@ -31,6 +31,9 @@ export default function Options() {
           </div>
         </div>
       </div>
+      <div className="options__btn-sec">
+          <button>Save</button>
+        </div>
     </div>
   );
 }
