@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./popup.scss";
 import img from "../../public/images/water.png";
+import { calulateHourlyWaterIntake } from "@/waterCalculationFunctions";
 
 export default function PopUp() {
   const [isFirstTime, setIsFirstTime] = useState<boolean>(false);
@@ -15,6 +16,28 @@ export default function PopUp() {
     });
   }, []);
 
+  const handleWaterDrank = () => {
+    console.log("Water drank button clicked!");
+
+    chrome.storage.local.get(["userSettings"], (result) => {
+      console.log("User settings:", result.userSettings);
+      if (result.userSettings) {
+        const hourlyWaterIntake = calulateHourlyWaterIntake(
+          result.userSettings.wakeTime,
+          result.userSettings.sleepTime,
+          result.userSettings.dailyGoal
+        );
+        const updatedSettings = {
+          ...result.userSettings,
+          totalWaterIntake: (result.userSettings.totalWaterIntake || 0) + hourlyWaterIntake,
+        };
+        chrome.storage.local.set({ userSettings: updatedSettings }, () => {
+          console.log("Updated user settings:", updatedSettings);
+        });
+      }
+    });
+  };
+
   const handleSetup = () => {
     chrome.storage.local.set({ isFirstTime: false });
     chrome.runtime.openOptionsPage();
@@ -24,11 +47,10 @@ export default function PopUp() {
   return isFirstTime ? (
     <div className="pop-up">
       <h3 className="pop-up__heading">👋 Welcome!</h3>
-      <p className="pop-up__heading">Set your daily water goal and reminder preferences.</p>
-      <div
-        onClick={handleSetup}
-        className="pop-up__sign-up"
-      >
+      <p className="pop-up__heading">
+        Set your daily water goal and reminder preferences.
+      </p>
+      <div onClick={handleSetup} className="pop-up__sign-up">
         Let’s Set It Up
       </div>
     </div>
@@ -50,7 +72,7 @@ export default function PopUp() {
           <h2>Total Goal Achived</h2>
           <h3>500 ml / 2000ml</h3>
           <div>
-            <button>Add</button>
+            <button onClick={handleWaterDrank}>Add</button>
           </div>
         </div>
       </div>

@@ -1,10 +1,12 @@
 console.log("Hello from background script!"); 
+
+
 const defaultSettings = {
     dailyGoal: 2000,
-    reminderInterval: 120,
     wakeTime: "07:00",
     sleepTime: "22:00",
-    notificationsEnabled: true,
+    totalWaterIntake: 0,
+    goalCompleted: false,
   };
   
   chrome.runtime.onInstalled.addListener(() => {
@@ -12,5 +14,17 @@ const defaultSettings = {
       userSettings: defaultSettings,
       isFirstTime: true,
     });
+    
   });
-  
+
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message.type === "SETTINGS_UPDATED") {
+      chrome.notifications.create({
+        type: "basic",
+        iconUrl: "water-bottle.png", // Make sure icon.png is in your static folder
+        title: "✅ Settings Saved",
+        message: "Your preferences have been saved successfully.",
+        priority: 2,
+      });
+    }
+  });

@@ -15,7 +15,6 @@ module.exports = (env, argv) => {
       options: path.resolve("src/options/index.tsx"),
       background: path.resolve("src/background/background.ts"),
       contentScript: path.resolve("src/contentScript/contentScript.ts"),
-      newTab: path.resolve("src/tabs/Tabs.tsx"),
     },
     output: {
       filename: "[name].js",
@@ -91,12 +90,17 @@ module.exports = (env, argv) => {
 };
 
 function getHtmlPlugins(chunks) {
-  return chunks.map(
-    (chunk) =>
-      new HtmlWebpackPlugin({
+  const titles = {
+    popup: "Water Tracker",
+    options: "Settings",
+    newTab: "New Tab", // or leave blank
+  };
+
+  return chunks.map((chunk) =>
+    new HtmlWebpackPlugin({
         title: "Water Tracker Extension",
-        filename: `${chunk}.html`,
-        chunks: [chunk],
-      })
+      filename: `${chunk}.html`,
+      chunks: [chunk],
+    })
   );
 }
