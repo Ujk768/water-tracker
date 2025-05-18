@@ -21,7 +21,7 @@ const defaultSettings = {
     if (message.type === "SETTINGS_UPDATED") {
       chrome.notifications.create({
         type: "basic",
-        iconUrl: "water-bottle.png", // Make sure icon.png is in your static folder
+        iconUrl: "water-bottle.png",
         title: "✅ Settings Saved",
         message: "Your preferences have been saved successfully.",
         priority: 2,

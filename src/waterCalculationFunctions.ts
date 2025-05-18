@@ -12,7 +12,7 @@ export const calulateHourlyWaterIntake = (wakeTime: string, sleepTime: string, d
     }
   
     // Calculate the hourly water intake
-    const hourlyWaterIntake = dailyGoal / totalHours;
+    const hourlyWaterIntake = Math.round(dailyGoal / totalHours);
   
     return hourlyWaterIntake;
 }

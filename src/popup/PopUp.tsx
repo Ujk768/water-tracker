@@ -5,6 +5,9 @@ import { calulateHourlyWaterIntake } from "@/waterCalculationFunctions";
 
 export default function PopUp() {
   const [isFirstTime, setIsFirstTime] = useState<boolean>(false);
+  const [waterDrankTillNow, setWaterDrankTillNow] = useState(0);
+  const [hourlyWaterNeeded, setHourlyWaterNeeded] = useState(0);
+  const [dailyGoal, setDailyGoal] = useState(0);
 
   useEffect(() => {
     console.log("Checking if it's the first time...");
@@ -16,20 +19,31 @@ export default function PopUp() {
     });
   }, []);
 
+  useEffect(() => {
+    chrome.storage.local.get(["userSettings"], (result) => {
+      console.log("Storage result:", result);
+      if (result.userSettings) {
+        setDailyGoal(result.userSettings.dailyGoal);
+        const hourlyWaterIntake = calulateHourlyWaterIntake(
+          result.userSettings.wakeTime,
+          result.userSettings.sleepTime,
+          result.userSettings.dailyGoal
+        );
+        setHourlyWaterNeeded(hourlyWaterIntake);
+      }
+    });
+  }, [hourlyWaterNeeded]);
+
   const handleWaterDrank = () => {
     console.log("Water drank button clicked!");
 
     chrome.storage.local.get(["userSettings"], (result) => {
       console.log("User settings:", result.userSettings);
       if (result.userSettings) {
-        const hourlyWaterIntake = calulateHourlyWaterIntake(
-          result.userSettings.wakeTime,
-          result.userSettings.sleepTime,
-          result.userSettings.dailyGoal
-        );
         const updatedSettings = {
           ...result.userSettings,
-          totalWaterIntake: (result.userSettings.totalWaterIntake || 0) + hourlyWaterIntake,
+          totalWaterIntake:
+            (result.userSettings.totalWaterIntake || 0) + hourlyWaterNeeded,
         };
         chrome.storage.local.set({ userSettings: updatedSettings }, () => {
           console.log("Updated user settings:", updatedSettings);
@@ -70,9 +84,11 @@ export default function PopUp() {
         </div>
         <div className="right-sec">
           <h2>Total Goal Achived</h2>
-          <h3>500 ml / 2000ml</h3>
+          <h3>
+            {waterDrankTillNow} / {dailyGoal} ml
+          </h3>
           <div>
-            <button onClick={handleWaterDrank}>Add</button>
+            <button onClick={handleWaterDrank}>Add {hourlyWaterNeeded} ml</button>
           </div>
         </div>
       </div>
