@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./popup.scss";
 import img from "../../public/images/water.png";
 import { calulateHourlyWaterIntake } from "@/waterCalculationFunctions";
+import { UserSettings } from "@/userTypes";
 
 export default function PopUp() {
   const [isFirstTime, setIsFirstTime] = useState<boolean>(false);
@@ -9,7 +10,7 @@ export default function PopUp() {
   const [hourlyWaterNeeded, setHourlyWaterNeeded] = useState(0);
   const [waterDrankTillNowPercent, setWaterDrankTillNowPercent] = useState(0);
   const [dailyGoal, setDailyGoal] = useState(0);
-  const [userDetails, setUserDetails] = useState({});
+  const [userDetails, setUserDetails] = useState({} as UserSettings);
 
   useEffect(() => {
     console.log("Checking if it's the first time...");
@@ -43,7 +44,7 @@ export default function PopUp() {
     }
   }, [isFirstTime]);
 
-  const handleWaterDrank = async () => {
+  const handleWaterDrank = () => {
     console.log("Water drank button clicked!");
     waterDrankTillNow >= dailyGoal
       ? ""
@@ -61,7 +62,9 @@ export default function PopUp() {
       userSettings: updatedObject,
     });
 
-    await chrome.runtime.sendMessage({ type: "USER_DRANK", multiplier: 2 });
+    (userDetails.totalWaterIntake || 0) >= dailyGoal
+      ? chrome.runtime.sendMessage({ type: "GOAL_COMPLETED", multiplier: 1 })
+      : chrome.runtime.sendMessage({ type: "USER_DRANK", multiplier: 1 });
   };
 
   const handleSetup = () => {
