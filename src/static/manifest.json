@@ -15,7 +15,9 @@
       "tabs",
       "bookmarks",
       "storage",
-      "identity"
+      "identity",
+      "notifications",
+      "alarms"
   ],
   "icons": {
       "16" : "water-bottle.png",
