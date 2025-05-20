@@ -7,7 +7,9 @@ export default function PopUp() {
   const [isFirstTime, setIsFirstTime] = useState<boolean>(false);
   const [waterDrankTillNow, setWaterDrankTillNow] = useState(0);
   const [hourlyWaterNeeded, setHourlyWaterNeeded] = useState(0);
+  const [waterDrankTillNowPercent, setWaterDrankTillNowPercent] = useState(0);
   const [dailyGoal, setDailyGoal] = useState(0);
+  const [userDetails, setUserDetails] = useState({});
 
   useEffect(() => {
     console.log("Checking if it's the first time...");
@@ -17,39 +19,49 @@ export default function PopUp() {
         setIsFirstTime(true);
       }
     });
-  }, []);
+    if (!isFirstTime) {
+      chrome.storage.local.get(["userSettings"], (result) => {
+        console.log("Storage result:", result);
+        if (result.userSettings) {
+          setUserDetails(result.userSettings);
+          setDailyGoal(result.userSettings.dailyGoal);
+          setWaterDrankTillNow(result.userSettings.totalWaterIntake || 0);
+          setHourlyWaterNeeded(
+            calulateHourlyWaterIntake(
+              result.userSettings.wakeTime,
+              result.userSettings.sleepTime,
+              result.userSettings.dailyGoal
+            )
+          );
+          setWaterDrankTillNowPercent(
+            ((result.userSettings.totalWaterIntake || 0) /
+              result.userSettings.dailyGoal) *
+              100
+          );
+        }
+      });
+    }
+  }, [isFirstTime]);
 
-  useEffect(() => {
-    chrome.storage.local.get(["userSettings"], (result) => {
-      console.log("Storage result:", result);
-      if (result.userSettings) {
-        setDailyGoal(result.userSettings.dailyGoal);
-        const hourlyWaterIntake = calulateHourlyWaterIntake(
-          result.userSettings.wakeTime,
-          result.userSettings.sleepTime,
-          result.userSettings.dailyGoal
-        );
-        setHourlyWaterNeeded(hourlyWaterIntake);
-      }
-    });
-  }, [hourlyWaterNeeded]);
-
-  const handleWaterDrank = () => {
+  const handleWaterDrank = async () => {
     console.log("Water drank button clicked!");
-
-    chrome.storage.local.get(["userSettings"], (result) => {
-      console.log("User settings:", result.userSettings);
-      if (result.userSettings) {
-        const updatedSettings = {
-          ...result.userSettings,
-          totalWaterIntake:
-            (result.userSettings.totalWaterIntake || 0) + hourlyWaterNeeded,
-        };
-        chrome.storage.local.set({ userSettings: updatedSettings }, () => {
-          console.log("Updated user settings:", updatedSettings);
-        });
-      }
+    waterDrankTillNow >= dailyGoal
+      ? ""
+      : setWaterDrankTillNow((prev) => prev + hourlyWaterNeeded);
+    setWaterDrankTillNowPercent(
+      ((waterDrankTillNow + hourlyWaterNeeded) / dailyGoal) * 100
+    );
+    // Update the total water intake in storage
+    const updatedObject = {
+      ...userDetails,
+      totalWaterIntake: waterDrankTillNow + hourlyWaterNeeded,
+    };
+    setUserDetails(updatedObject);
+    chrome.storage.local.set({
+      userSettings: updatedObject,
     });
+
+    await chrome.runtime.sendMessage({ type: "USER_DRANK", multiplier: 2 });
   };
 
   const handleSetup = () => {
@@ -76,7 +88,7 @@ export default function PopUp() {
             className="left-sec__progress"
             style={{
               background: `radial-gradient(closest-side, #222831 79%, transparent 80% 100%),
-                conic-gradient(#4CC9FE 75%, #D4F6FF 0)`,
+              conic-gradient(#4CC9FE ${waterDrankTillNowPercent}%, #D4F6FF 0)`,
             }}
           >
             <img src={img} alt="placeholder" />
@@ -88,7 +100,9 @@ export default function PopUp() {
             {waterDrankTillNow} / {dailyGoal} ml
           </h3>
           <div>
-            <button onClick={handleWaterDrank}>Add {hourlyWaterNeeded} ml</button>
+            <button onClick={handleWaterDrank}>
+              Add {hourlyWaterNeeded} ml
+            </button>
           </div>
         </div>
       </div>
