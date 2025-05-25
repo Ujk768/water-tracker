@@ -36,9 +36,19 @@ chrome.runtime.onMessage.addListener((message) => {
       });
       chrome.alarms.clear("waterReminder");
       chrome.alarms.create("waterReminder", {
-        delayInMinutes: 0.5,
+        delayInMinutes: 60, // 1 hour
       });
       console.log("Alarm created for water reminder");
+    }
+    if(message.type === "GOAL_COMPLETED") {
+      chrome.notifications.create({
+        type: "basic",
+        iconUrl: "water-bottle.png",
+        title: "🎉 Goal Completed!",
+        message: `Congratulations! You have completed your daily water intake`,
+        priority: 2,
+      });
+      chrome.alarms.clear("waterReminder");
     }
   } catch (err) {
     console.error("Error in listner", err);
