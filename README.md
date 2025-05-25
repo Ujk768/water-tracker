@@ -31,10 +31,14 @@ Stay hydrated and healthy with this productivity-focused Chrome Extension. This 
 - **Hourly Water Goal Calculation**: Automatically calculates how much water to drink each hour based on wake/sleep time and daily goal.
 - **Live Tracking**: The popup displays real-time progress (e.g., `800/2000ml`) and a visual indicator (circular progress bar).
 - **Persistent State**: Total water intake is saved in local storage and updated after every drink.
+
+
  **Track User Progress**
+  
 ![image](https://github.com/user-attachments/assets/57c6edb6-810f-4951-bdd5-a4da655c5f17)
 
-** Notifications to remind and update User Actions**
+
+**Notifications to remind and update User Actions**
 ![image](https://github.com/user-attachments/assets/4754343f-d374-4968-8183-bdb9d0518ce2)
 
 ---
