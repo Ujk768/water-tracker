@@ -37,10 +37,11 @@ chrome.runtime.onMessage.addListener((message) => {
       chrome.alarms.clear("waterReminder");
       chrome.alarms.create("waterReminder", {
         delayInMinutes: 60, // 1 hour
+        periodInMinutes: 60, // Repeat every hour
       });
       console.log("Alarm created for water reminder");
     }
-    if(message.type === "GOAL_COMPLETED") {
+    if (message.type === "GOAL_COMPLETED") {
       chrome.notifications.create({
         type: "basic",
         iconUrl: "water-bottle.png",
